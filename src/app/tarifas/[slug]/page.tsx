@@ -26,9 +26,10 @@ const WA = process.env.NEXT_PUBLIC_WHATSAPP || "34621192578";
 
 /* ── SEO ─────────────────────────────────────────────────── */
 export async function generateMetadata(
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ): Promise<Metadata> {
-  const t = getTarifaBySlug(params.slug);
+  const { slug } = await params;
+  const t = getTarifaBySlug(slug);
   if (!t) return {};
   return {
     title: t.seoTitle,
@@ -47,8 +48,9 @@ const ICON_MOVIL = "M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v
 const ICON_TV    = "M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 002 2z";
 
 /* ── Página ─────────────────────────────────────────────── */
-export default function TarifaPage({ params }: { params: { slug: string } }) {
-  const tarifa = getTarifaBySlug(params.slug);
+export default async function TarifaPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const tarifa = getTarifaBySlug(slug);
   if (!tarifa) notFound();
 
   const precio = tarifa.precioMes.toFixed(2).replace(".", ",");
