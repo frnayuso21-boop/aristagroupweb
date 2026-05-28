@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { client, BLOG_LIST_QUERY, urlFor } from "@/lib/sanity";
 
 export const metadata: Metadata = {
   title: "Blog Arista Group — Consejos de fibra, móvil y energía en Alicante",
@@ -52,34 +51,17 @@ const CAT_COLORS: Record<string, string> = {
   "Ahorro":       "#E53E3E",
 };
 
-interface SanityPost {
-  _id: string;
+interface Post {
   slug: string;
   titulo: string;
   resumen: string;
-  imagen?: { asset?: { _ref: string } };
   categoria?: string;
   publicadoEn?: string;
   autor?: string;
-  destacado?: boolean;
 }
 
-export const revalidate = 60; // Revalida cada minuto
-
-export default async function BlogPage() {
-  // Intenta cargar desde Sanity
-  let posts: SanityPost[] = [];
-  let usingSanity = false;
-  try {
-    if (process.env.NEXT_PUBLIC_SANITY_PROJECT_ID) {
-      posts = await client.fetch(BLOG_LIST_QUERY);
-      usingSanity = posts.length > 0;
-    }
-  } catch {
-    // Fallback silencioso a estáticos
-  }
-
-  const lista = usingSanity ? posts : STATIC_POSTS as unknown as SanityPost[];
+export default function BlogPage() {
+  const lista: Post[] = STATIC_POSTS;
 
   function formatFecha(raw?: string) {
     if (!raw) return "";
@@ -115,27 +97,16 @@ export default async function BlogPage() {
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {lista.map((post) => {
                 const color = CAT_COLORS[post.categoria ?? ""] ?? "#1648D8";
-                const imgUrl = usingSanity && post.imagen
-                  ? urlFor(post.imagen).width(600).height(340).fit("crop").url()
-                  : null;
 
                 return (
-                  <Link key={post._id ?? post.slug} href={`/blog/${post.slug}`}
+                  <Link key={post.slug} href={`/blog/${post.slug}`}
                     className="group flex flex-col rounded-2xl border border-gray-200 bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                    {/* Imagen o placeholder */}
-                    <div className="h-40 flex-shrink-0 overflow-hidden"
+                    {/* Placeholder */}
+                    <div className="h-40 flex-shrink-0 flex items-center justify-center"
                       style={{ backgroundColor: `${color}10` }}>
-                      {imgUrl ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={imgUrl} alt={post.titulo}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center">
-                          <svg className="h-10 w-10 opacity-30" style={{ color }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                          </svg>
-                        </div>
-                      )}
+                      <svg className="h-10 w-10 opacity-30" style={{ color }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
                     </div>
 
                     {/* Contenido */}
